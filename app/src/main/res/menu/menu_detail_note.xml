@@ -1,0 +1,19 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="rcdsm.imerir.notekeeper.DetailNote">
+
+    <item
+        android:id="@+id/deleteItem"
+        android:title="Delete"
+        app:showAsAction="ifRoom"
+        android:icon="@android:drawable/ic_menu_delete"
+        ></item>
+
+    <item
+        android:id="@+id/validateItem"
+        android:title="Valider"
+        app:showAsAction="ifRoom"
+        android:icon="@android:drawable/ic_menu_save"
+        ></item>
+</menu>
