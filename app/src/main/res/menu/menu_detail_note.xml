@@ -16,4 +16,11 @@
         app:showAsAction="ifRoom"
         android:icon="@android:drawable/ic_menu_save"
         ></item>
+
+    <item
+        android:id="@+id/shareItem"
+        android:title="Envoyer"
+        app:showAsAction="ifRoom"
+        android:icon="@android:drawable/ic_menu_share"
+        ></item>
 </menu>

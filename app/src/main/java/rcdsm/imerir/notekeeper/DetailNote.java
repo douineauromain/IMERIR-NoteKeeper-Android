@@ -9,6 +9,7 @@ import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
@@ -23,6 +24,8 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+
+import org.apache.http.protocol.HTTP;
 
 import java.io.IOException;
 import java.util.Date;
@@ -112,7 +115,7 @@ public class DetailNote extends ActionBarActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-       // Inflate the menu; this adds items to the action bar if it is present.
+        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_detail_note, menu);
         return true;
     }
@@ -131,6 +134,16 @@ public class DetailNote extends ActionBarActivity {
         if (id == R.id.deleteItem) {
             deleteAndGo();
         }
+        if (id == R.id.shareItem) {
+            Intent emailIntent = new Intent(Intent.ACTION_SEND);
+            emailIntent.setType(HTTP.PLAIN_TEXT_TYPE);
+            emailIntent.putExtra(Intent.EXTRA_EMAIL, new String[] {"jon@example.com"}); // recipients
+            emailIntent.putExtra(Intent.EXTRA_SUBJECT, "NoteKeeper : "+note.getTitle());
+            emailIntent.putExtra(Intent.EXTRA_TEXT, note.getContent());
+//            emailIntent.putExtra(Intent.EXTRA_STREAM, Uri.parse("content://path/to/email/attachment"));
+            startActivity(emailIntent);
+        }
+
 
 
         return super.onOptionsItemSelected(item);
