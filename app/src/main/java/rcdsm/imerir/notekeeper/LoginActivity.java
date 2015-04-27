@@ -6,9 +6,11 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.LoaderManager.LoaderCallbacks;
 import android.content.ContentResolver;
+import android.content.Context;
 import android.content.CursorLoader;
 import android.content.Intent;
 import android.content.Loader;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -17,6 +19,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -26,9 +29,19 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.androidquery.AQuery;
+import com.androidquery.callback.AjaxCallback;
+import com.androidquery.callback.AjaxStatus;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -36,6 +49,9 @@ import java.util.List;
  */
 public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 
+    AQuery query;
+    View focusView;
+    JSONObject user;
     /**
      * A dummy authentication store containing known user names and passwords.
      * TODO: remove after connecting to a real authentication system.
@@ -111,7 +127,7 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
         String password = mPasswordView.getText().toString();
 
         boolean cancel = false;
-        View focusView = null;
+        focusView = null;
 
         // Check for a valid password, if the user entered one.
         if (!TextUtils.isEmpty(password) && !isPasswordValid(password)) {
@@ -138,14 +154,89 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
         } else {
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
-            showProgress(true);
+           // showProgress(true);
             //mAuthTask = new UserLoginTask(email, password);
             //mAuthTask.execute((Void) null);
 
-            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-            startActivity(intent);
+            async_post_sign_up(email, password);
         }
 
+
+    }
+
+    public void async_post_sign_up(String email, String password){
+
+        Log.d("azertypost", "test post with "+email+" password "+password);
+
+        String url = "http://notes.lloyd66.fr/api/v1/user/connect";
+
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put("q", "androidquery");
+
+        query = new AQuery(this);
+        user = new JSONObject();
+        try {
+            user.put("email", email);
+            user.put("password", password);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        Log.d("azertjson", user.toString());
+
+        query.post(url, user, JSONObject.class, new AjaxCallback<JSONObject>() {
+
+            @Override
+            public void callback(String url, JSONObject json, AjaxStatus status) {
+
+                Log.d("azertyjson", "response : " + json.toString());
+
+                try {
+                    if (!json.getBoolean("success")) {
+                        //Erreur
+                        Log.d("azertyjson", "Erreur Login");
+                        Toast.makeText(LoginActivity.this, json.getString("reason"), Toast.LENGTH_LONG).show();
+                        //Creer le compte si l'erreur est email inconnu
+                        if (json.getString("reason").equals("User not found")) {
+                            Log.d("azertyjson", "Du coup on creer le compte");
+                            String urln = "http://notes.lloyd66.fr/api/v1/user/";
+                            query.post(urln, user, JSONObject.class, new AjaxCallback<JSONObject>() {
+                                @Override
+                                public void callback(String url, JSONObject json, AjaxStatus status) {
+                                    Log.d("azertyjson", "response create account : " + json.toString());
+                                    Toast.makeText(LoginActivity.this, "No user found, so we had create an account", Toast.LENGTH_LONG).show();
+
+                                }
+
+
+                            });
+                        }
+
+                    } else {
+                        //ok
+                        Log.d("azertyjson", "Login ok");
+                        //get token
+                        JSONObject token = json.getJSONObject("token");
+                        String tokenValue = token.getString("value");
+
+                        //--SAVE Data
+                        SharedPreferences preferences = LoginActivity.this.getSharedPreferences("MyPreferences", Context.MODE_PRIVATE);
+                        SharedPreferences.Editor editor = preferences.edit();
+                        editor.putString("token", tokenValue);
+                        editor.commit();
+
+                        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                        startActivity(intent);
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                    //Erreur
+                    Log.d("azertyjson", "Erreur Login (json)");
+                    showProgress(false);
+                }
+
+            }
+        });
 
     }
 
