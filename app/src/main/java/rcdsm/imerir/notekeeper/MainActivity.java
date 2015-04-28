@@ -103,7 +103,7 @@ public class MainActivity extends ActionBarActivity {
 
         @Override
         public boolean onQueryTextChange(String newText) {
-            if (newText == "") {
+            if (newText.equals("")) {
                 search("");
             } else {
                 search(newText);

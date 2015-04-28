@@ -33,10 +33,11 @@ import java.util.List;
 import java.util.Locale;
 
 import models.Note;
+import models.NoteListener;
 import models.TestRealm;
 
 
-public class DetailNote extends ActionBarActivity {
+public class DetailNote extends ActionBarActivity{
 
     TextView textViewDateCreated,textViewDateUpdated,textViewCity;
     EditText editTextTitle, editTextContent;
@@ -63,25 +64,42 @@ public class DetailNote extends ActionBarActivity {
 
         testRealm = new TestRealm(this);
 
+        NoteListener noteListener = new NoteListener() {
+            @Override
+            public void onGetTheNoteById(Note noteR) {
+                note = noteR;
+                textViewDateCreated.setText(note.getCreatedAt().toString());
+                textViewDateUpdated.setText(note.getUpdatedAt().toString());
+                editTextTitle.setText(note.getTitle().toString());
+                editTextContent.setText(note.getContent().toString());
+                textViewCity.setText(note.getCity().toString());
+
+                setTitle(note.getTitle());
+            }
+
+            @Override
+            public void onCreateNote(long idR) {
+                testRealm.getNoteById(idR, this);
+            }
+        };
+
 
 //        ActionBar actionBar = getSupportActionBar();
 //        actionBar.setDisplayHomeAsUpEnabled(true);
 
         Bundle extras = getIntent().getExtras();
         if (extras.getLong("noteid") != 0) {
-            note = testRealm.getNoteById(extras.getLong("noteid"));
-            setTitle(note.getTitle());
+            testRealm.getNoteById(extras.getLong("noteid"), noteListener);
+
         } else {
             setTitle("Nouvelle note");
-            note = testRealm.createOneNote();
+            testRealm.createOneNote(noteListener);
             newnote = true;
         }
 
-        textViewDateCreated.setText(note.getCreatedAt().toString());
-        textViewDateUpdated.setText(note.getUpdatedAt().toString());
-        editTextTitle.setText(note.getTitle().toString());
-        editTextContent.setText(note.getContent().toString());
-        textViewCity.setText(note.getCity().toString());
+
+
+
 
         //GPS
         LocationManager locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
